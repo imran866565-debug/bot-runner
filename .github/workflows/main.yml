@@ -43,5 +43,8 @@ jobs:
         GH_PAT: ${{ secrets.PAT }}
         ADMIN_ID: ${{ secrets.ADMIN_ID }}
         GIST_ID: ${{ secrets.GIST_ID }}
+        AI_KEY: ${{ secrets.AI_KEY }}
+        AI_BASE: "https://api.tokenrouter.com/v1"
+        AI_MODEL: "qwen/qwen3.8-max-free"
         GITHUB_REPOSITORY: ${{ github.repository }}
       run: python bot.py
