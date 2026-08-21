@@ -1,12 +1,10 @@
 name: Ghost Runner 20
-
 on:
   schedule:
     - cron: '0 */5 * * *'
   workflow_dispatch:
   repository_dispatch:
     types: [restart-bot]
-
 jobs:
   node:
     runs-on: ubuntu-latest
