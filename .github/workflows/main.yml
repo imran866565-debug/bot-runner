@@ -1,4 +1,4 @@
-name: Ghost Runner
+name: Ghost Runner 20
 
 on:
   schedule:
@@ -7,37 +7,34 @@ on:
   repository_dispatch:
     types: [restart-bot]
 
-concurrency:
-  group: ghost-runner
-  cancel-in-progress: true
-
 jobs:
-  execute-private:
+  node:
     runs-on: ubuntu-latest
     timeout-minutes: 300
-
+    strategy:
+      matrix:
+        worker: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+      fail-fast: false
+    concurrency:
+      group: ghost-${{ matrix.worker }}
+      cancel-in-progress: true
     steps:
-    - name: Fetch Private Core
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
         repository: imran866565-debug/student-verifier-bot
         token: ${{ secrets.PAT }}
         path: .
-
-    - name: Setup Browser
+    - name: Setup
       run: |
         sudo apt-get update
         sudo apt-get install -y wget unzip libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64
         wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
         sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
-
-    - name: Install Dependencies
-      run: pip install -r requirements.txt
-
-    - name: Launch System
+        sudo apt-get update && sudo apt-get install -y google-chrome-stable
+        pip install -r requirements.txt
+    - name: Launch
       env:
+        ROLE: ${{ matrix.worker == 0 && 'dispatcher' || 'worker' }}
         TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
         CRYPTO_ADDRESS: ${{ secrets.CRYPTO_ADDRESS }}
         GH_PAT: ${{ secrets.PAT }}
@@ -45,7 +42,5 @@ jobs:
         GIST_ID: ${{ secrets.GIST_ID }}
         AI_KEY: ${{ secrets.AI_KEY }}
         TRONSCAN_API: ${{ secrets.TRONSCAN_API }}
-        AI_BASE: "https://api.tokenrouter.com/v1"
-        AI_MODEL: "qwen/qwen3.8-max-free"
         GITHUB_REPOSITORY: ${{ github.repository }}
       run: python bot.py
