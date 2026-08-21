@@ -35,9 +35,10 @@ jobs:
     - name: Launch
       env:
         ROLE: ${{ matrix.worker == 0 && 'dispatcher' || 'worker' }}
+        WORKER_ID: ${{ matrix.worker }}
         TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
         CRYPTO_ADDRESS: ${{ secrets.CRYPTO_ADDRESS }}
-        GH_PAT: ${{ secrets.PAT }}
+        PAT: ${{ secrets.PAT }}
         ADMIN_ID: ${{ secrets.ADMIN_ID }}
         GIST_ID: ${{ secrets.GIST_ID }}
         AI_KEY: ${{ secrets.AI_KEY }}
