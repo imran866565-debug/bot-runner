@@ -2,38 +2,40 @@ name: Ghost Runner
 
 on:
   schedule:
-    - cron: '0 */5 * * *' # Har 5 ghante mein Public minutes se chalega
-  workflow_dispatch: # Manual button
+    - cron: '0 */5 * * *'
+  workflow_dispatch:
+  repository_dispatch:
+    types: [restart-bot]
+
+concurrency:
+  group: ghost-runner
+  cancel-in-progress: true
 
 jobs:
   execute-private:
     runs-on: ubuntu-latest
-    timeout-minutes: 300 # 5 Hours max
-    
+    timeout-minutes: 300
+
     steps:
-    # 1. SILENT CHECKOUT (Code Private se aayega, Minutes Public ke katenge)
     - name: Fetch Private Core
       uses: actions/checkout@v4
       with:
         repository: imran866565-debug/student-verifier-bot
         token: ${{ secrets.PAT }}
-        path: . 
+        path: .
 
-    # 2. SETUP CHROME (Ubuntu 24.04 Compatible)
     - name: Setup Browser
       run: |
         sudo apt-get update
         sudo apt-get install -y wget unzip libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64
-        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
         sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
         sudo apt-get update
         sudo apt-get install -y google-chrome-stable
 
-    # 3. INSTALL DEPS
     - name: Install Dependencies
       run: pip install -r requirements.txt
 
-    # 4. RUN BOT (Secrets yahan se inject honge)
     - name: Launch System
       env:
         TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -41,5 +43,5 @@ jobs:
         GH_PAT: ${{ secrets.PAT }}
         ADMIN_ID: ${{ secrets.ADMIN_ID }}
         GIST_ID: ${{ secrets.GIST_ID }}
-        GITHUB_REPOSITORY: imran866565-debug/student-verifier-bot
+        GITHUB_REPOSITORY: ${{ github.repository }}
       run: python bot.py
